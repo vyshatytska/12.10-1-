@@ -1,0 +1,169 @@
+#include <iostream>
+#include <fstream>
+#include <conio.h>
+#include <sstream>
+#include <string>
+using namespace std;
+struct node
+{
+	int info;
+	node* l, * r;
+};
+
+node* tree = NULL;
+
+
+void push(int a, node** t)
+{
+	if ((*t) == NULL)
+	{
+		(*t) = new node;
+		(*t)->info = a;
+		(*t)->l = (*t)->r = NULL;
+		return;
+	}
+	if (a > (*t)->info) push(a, &(*t)->r);
+	else push(a, &(*t)->l);
+}
+
+void print(node* t, int u)
+{
+	if (t == NULL) return;
+	else
+	{
+		print(t->l, ++u);
+		for (int i = 0; i < u; ++i)
+		{
+			cout << "|";
+		}
+		cout << t->info << endl;
+		u--;
+	}
+	print(t->r, ++u);
+}
+void ReadFile(node* t)
+{
+	string line;
+	int temp;
+	ifstream in("num.txt");
+	if (in.is_open())
+	{
+		while (getline(in, line))
+		{
+			in >> temp;
+			push(temp, &tree);
+		}
+	}
+	in.close();
+}
+
+
+node* deleteNode(node* root, int k)
+{
+
+	if (root == NULL)
+		return root;
+
+
+	if (root->info > k) {
+		root->l = deleteNode(root->l, k);
+		return root;
+	}
+	else if (root->info < k) {
+		root->r = deleteNode(root->r, k);
+		return root;
+	}
+	if (root->l == NULL) {
+		node* temp = root->r;
+		delete root;
+		return temp;
+	}
+	else if (root->r == NULL) {
+		node* temp = root->l;
+		delete root;
+		return temp;
+	}
+
+	else {
+
+		node* succParent = root;
+
+
+		node* succ = root->r;
+		while (succ->l != NULL) {
+			succParent = succ;
+			succ = succ->l;
+		}
+
+		if (succParent != root)
+			succParent->l = succ->r;
+		else
+			succParent->r = succ->r;
+		root->info = succ->info;
+		delete succ;
+		return root;
+	}
+}
+
+
+
+void del(node*& Tree) {
+	if (Tree != NULL)
+	{
+		del(Tree->l);
+		del(Tree->r);
+		delete Tree;
+		Tree = NULL;
+	}
+}
+
+bool isEvenParity(int x)
+{
+	if (x % 2 == 0)
+		return true;
+	else
+		return false;
+}
+void DeleteParity(node* t, node** root)
+{
+	int* p;
+	int x;
+
+	if (t == NULL) return;
+	else
+	{
+
+		p = &t->info;
+
+		x = *p;
+
+		if (t->l != NULL)
+		{
+			DeleteParity(t->l, root);
+		}
+		if (t->r != NULL)
+		{
+			DeleteParity(t->r, root);
+		}
+		if (isEvenParity(x))
+		{
+			deleteNode(*root, x);
+		}
+	}
+
+}
+
+int main()
+{
+
+	ReadFile(tree);
+	cout << "Tree : \n";
+	print(tree, 0);
+
+	// deleteNode(tree, 7);
+	DeleteParity(tree, &tree);
+	cout << "Tree after deleting : \n";
+	print(tree, 0);
+	del(tree);
+	cin.ignore().get();
+}
